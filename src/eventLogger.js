@@ -6,6 +6,7 @@ export class EventLogger {
   constructor() {
     this.events = [];
     this.maxEvents = 100; // Keep last 100 events
+    this.listeners = new Set();
   }
 
   /**
@@ -29,6 +30,16 @@ export class EventLogger {
     if (this.events.length > this.maxEvents) {
       this.events.shift();
     }
+
+    // Notify subscribers (UI hooks, analytics, etc.)
+    this.listeners.forEach(listener => {
+      try {
+        listener(event);
+      } catch (err) {
+        // Avoid crashing the logger because of a subscriber failure
+        console.error('EventLogger subscriber error:', err);
+      }
+    });
 
     // Also print to console for visibility
     console.log(`[${type.toUpperCase()}] ${description}`);
@@ -67,6 +78,24 @@ export class EventLogger {
    */
   clear() {
     this.events = [];
+  }
+
+  /**
+   * Subscribe to new events (useful for UIs)
+   * @param {(event: object) => void} listener
+   * @returns {() => void} Unsubscribe function
+   */
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () => this.unsubscribe(listener);
+  }
+
+  /**
+   * Remove an event listener
+   * @param {(event: object) => void} listener
+   */
+  unsubscribe(listener) {
+    this.listeners.delete(listener);
   }
 
   /**
