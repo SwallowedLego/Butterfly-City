@@ -174,7 +174,7 @@ class ButterflyCity {
 }
 
 // Run the demo when this file is executed directly (Node.js only)
-if (typeof process !== 'undefined' && process.argv && import.meta.url === `file://${process.argv[1]}`) {
+if (typeof window === 'undefined' && typeof process !== 'undefined' && process.argv && import.meta.url === `file://${process.argv[1]}`) {
   const game = new ButterflyCity();
   game.runDemo();
 }

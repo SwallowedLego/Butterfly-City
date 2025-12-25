@@ -22,11 +22,12 @@ const EFFECT_FROM_CONSEQUENCE = {
 };
 
 class BrowserGame {
-  static MAX_FEED_ITEMS = 18;
+  static MAX_FEED_ITEMS = 18; // keep log compact in sidebar
+  static MAX_DELTA_TIME = 0.05; // 50ms cap to avoid jumpy animations after tab pauses
 
   constructor() {
     this.canvas = document.getElementById('game-canvas');
-    if (!this.canvas) throw new Error('Missing #game-canvas element');
+    if (!this.canvas) throw new Error('Missing #game-canvas element. Ensure index.html includes <canvas id="game-canvas">.');
     this.ctx = this.canvas.getContext('2d');
 
     this.city = new ButterflyCity();
@@ -48,8 +49,16 @@ class BrowserGame {
     this.hint = document.getElementById('hint');
     this.subjectSelect = document.getElementById('subject-select');
 
-    if (!this.eventFeed || !this.villagerList || !this.selectionLabel || !this.hint || !this.subjectSelect) {
-      throw new Error('Missing required UI elements for browser game');
+    const required = [
+      { el: this.eventFeed, name: '#event-feed' },
+      { el: this.villagerList, name: '#villager-list' },
+      { el: this.selectionLabel, name: '#selection-label' },
+      { el: this.hint, name: '#hint' },
+      { el: this.subjectSelect, name: '#subject-select' }
+    ];
+    const missing = required.filter(r => !r.el).map(r => r.name);
+    if (missing.length) {
+      throw new Error(`Missing required UI elements: ${missing.join(', ')}`);
     }
 
     this._spawnInitialVillagers();
@@ -142,7 +151,7 @@ class BrowserGame {
 
   _loop(timestamp) {
     // Cap delta to 50ms to avoid large jumps after tab switches or pauses
-    const delta = Math.min((timestamp - this.lastTime) / 1000, 0.05);
+    const delta = Math.min((timestamp - this.lastTime) / 1000, BrowserGame.MAX_DELTA_TIME);
     this.lastTime = timestamp;
     this._update(delta);
     this._render();
@@ -409,7 +418,7 @@ class BrowserGame {
   _markEffect(a, b, consequences) {
     const villagers = [a, b];
     consequences.forEach((c) => {
-      const effectType = EFFECT_FROM_CONSEQUENCE[c.type];
+      const effectType = EFFECT_FROM_CONSEQUENCE[c.type] || 'sparkles';
       if (effectType) villagers.forEach((v) => this._setEffect(v, effectType));
     });
   }
