@@ -302,13 +302,13 @@ class BrowserGame {
     div.textContent = `[${event.type}] ${event.description}`;
     this.eventFeed.prepend(div);
     while (this.eventFeed.childElementCount > BrowserGame.MAX_FEED_ITEMS) {
-      this.eventFeed.removeChild(this.eventFeed.lastElementChild);
+      this.eventFeed.lastElementChild.remove();
     }
   }
 
   _refreshVillagerUI() {
-    this.villagerList.innerHTML = '';
-    this.subjectSelect.innerHTML = '';
+    this.villagerList.replaceChildren();
+    this.subjectSelect.replaceChildren();
 
     this.villagers.forEach((villager) => {
       const card = document.createElement('button');
@@ -385,6 +385,10 @@ class BrowserGame {
   _ensurePair() {
     if (!this.selectedPrimary || !this.selectedSecondary) {
       this._flashHint('Select two villagers (click canvas or list).');
+      return null;
+    }
+    if (this.selectedPrimary.id === this.selectedSecondary.id) {
+      this._flashHint('Choose two different villagers for an interaction.');
       return null;
     }
     return { a: this.selectedPrimary, b: this.selectedSecondary };
