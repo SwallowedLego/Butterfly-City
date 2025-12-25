@@ -22,6 +22,8 @@ const EFFECT_FROM_CONSEQUENCE = {
 };
 
 class BrowserGame {
+  static MAX_FEED_ITEMS = 18;
+
   constructor() {
     this.canvas = document.getElementById('game-canvas');
     if (!this.canvas) throw new Error('Missing #game-canvas element');
@@ -99,7 +101,11 @@ class BrowserGame {
 
     const attach = (id, handler) => {
       const btn = document.getElementById(id);
-      if (btn) btn.addEventListener('click', handler);
+      if (btn) {
+        btn.addEventListener('click', handler);
+      } else {
+        console.warn(`ButterflyCity: missing button #${id}, action disabled`);
+      }
     };
 
     attach('btn-introduce', () => this._runIntroduce());
@@ -135,6 +141,7 @@ class BrowserGame {
   }
 
   _loop(timestamp) {
+    // Cap delta to 50ms to avoid large jumps after tab switches or pauses
     const delta = Math.min((timestamp - this.lastTime) / 1000, 0.05);
     this.lastTime = timestamp;
     this._update(delta);
@@ -281,7 +288,7 @@ class BrowserGame {
     div.className = `log-line log-${event.type}`;
     div.textContent = `[${event.type}] ${event.description}`;
     this.eventFeed.prepend(div);
-    while (this.eventFeed.childElementCount > 18) {
+    while (this.eventFeed.childElementCount > BrowserGame.MAX_FEED_ITEMS) {
       this.eventFeed.removeChild(this.eventFeed.lastElementChild);
     }
   }
@@ -452,5 +459,14 @@ class BrowserGame {
 
 // Bootstrap once DOM is ready
 window.addEventListener('DOMContentLoaded', () => {
-  new BrowserGame();
+  try {
+    new BrowserGame();
+  } catch (err) {
+    console.error('Failed to start Butterfly City:', err);
+    const fallback = document.createElement('div');
+    fallback.style.padding = '12px';
+    fallback.style.color = '#ef4444';
+    fallback.textContent = 'Butterfly City failed to start. Check console for details.';
+    document.body.appendChild(fallback);
+  }
 });
