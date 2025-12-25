@@ -24,7 +24,9 @@ const EFFECT_FROM_CONSEQUENCE = {
 class BrowserGame {
   constructor() {
     this.canvas = document.getElementById('game-canvas');
+    if (!this.canvas) throw new Error('Missing #game-canvas element');
     this.ctx = this.canvas.getContext('2d');
+
     this.city = new ButterflyCity();
     this.villagers = [];
     this.visualState = new Map();
@@ -43,6 +45,10 @@ class BrowserGame {
     this.selectionLabel = document.getElementById('selection-label');
     this.hint = document.getElementById('hint');
     this.subjectSelect = document.getElementById('subject-select');
+
+    if (!this.eventFeed || !this.villagerList || !this.selectionLabel || !this.hint || !this.subjectSelect) {
+      throw new Error('Missing required UI elements for browser game');
+    }
 
     this._spawnInitialVillagers();
     this._bindUI();
@@ -91,18 +97,15 @@ class BrowserGame {
   _bindUI() {
     this.canvas.addEventListener('click', (ev) => this._handleCanvasClick(ev));
 
-    document
-      .getElementById('btn-introduce')
-      .addEventListener('click', () => this._runIntroduce());
-    document
-      .getElementById('btn-gossip')
-      .addEventListener('click', () => this._runGossip());
-    document
-      .getElementById('btn-romance')
-      .addEventListener('click', () => this._runRomance());
-    document
-      .getElementById('btn-compete')
-      .addEventListener('click', () => this._runCompetition());
+    const attach = (id, handler) => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener('click', handler);
+    };
+
+    attach('btn-introduce', () => this._runIntroduce());
+    attach('btn-gossip', () => this._runGossip());
+    attach('btn-romance', () => this._runRomance());
+    attach('btn-compete', () => this._runCompetition());
     this.subjectSelect.addEventListener('change', (ev) => {
       const chosen = this.villagers.find((v) => v.id === ev.target.value);
       if (chosen) this.selectedSubject = chosen;
