@@ -22,12 +22,13 @@ const EFFECT_FROM_CONSEQUENCE = {
 };
 
 class BrowserGame {
-  static MAX_FEED_ITEMS = 18; // keep log compact in sidebar
-  static MAX_DELTA_TIME = 0.05; // 50ms cap to avoid jumpy animations after tab pauses
+  static MAX_FEED_ITEMS = 18; // number of event entries to keep visible in sidebar log
+  static MAX_DELTA_TIME = 0.05; // seconds; cap per-frame delta to avoid jumpy animations after tab pauses
+  static MS_TO_SECONDS = 1 / 1000;
 
   constructor() {
     this.canvas = document.getElementById('game-canvas');
-    if (!this.canvas) throw new Error('Missing #game-canvas element. Ensure index.html includes <canvas id="game-canvas">.');
+    if (!this.canvas) throw new Error('Missing #game-canvas element. Ensure your HTML includes <canvas id="game-canvas">.');
     this.ctx = this.canvas.getContext('2d');
 
     this.city = new ButterflyCity();
@@ -151,7 +152,10 @@ class BrowserGame {
 
   _loop(timestamp) {
     // Cap delta to 50ms to avoid large jumps after tab switches or pauses
-    const delta = Math.min((timestamp - this.lastTime) / 1000, BrowserGame.MAX_DELTA_TIME);
+    const delta = Math.min(
+      (timestamp - this.lastTime) * BrowserGame.MS_TO_SECONDS,
+      BrowserGame.MAX_DELTA_TIME
+    );
     this.lastTime = timestamp;
     this._update(delta);
     this._render();
