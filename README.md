@@ -46,6 +46,10 @@ cd Butterfly-City
 # No dependencies needed - pure JavaScript!
 ```
 
+### Play in the Browser
+
+Open `index.html` in any modern browser to try the canvas-based prototype. Click villagers on the scene or in the cards, select another villager, then fire nudges (introduce, gossip, romance, competition) to watch on-screen reactions and live event logs.
+
 ### Run the Demo
 
 ```bash
